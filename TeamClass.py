@@ -1,12 +1,10 @@
-<<<<<<< HEAD
 def findmin(amount):
     min = 101
-    minindex=0
-    counter = 0
     for counter in amount:
         if  min>counter:
              min=counter
     return amount.index(min)
+
 
 def FillStartSquad(AllPlayers,Tactic):
     StartPlayers=[]
@@ -57,28 +55,77 @@ def FillStartSquad(AllPlayers,Tactic):
             StrikersRating[findmin(StrikersRating)] = Player.Rating
     return StartPlayers
 
+def FillReserve(AllPlayers,StartPlayers):
+    Reserve=[]
+    GKRating=0
+    DFRating=[0,0]
+    MDRating=[0,0,0]
+    STRating=0
+    for Player in AllPlayers:
+        Start=False
+        for Player1 in StartPlayers:
+            if Player.Surname==Player1.Surname:
+                Start=True
+        if Start==False:
+            if Player.Position=='GK' and (len(Reserve)==0 or Player.Rating>GKRating):
+                if len(Reserve)==1:
+                    Reserve.pop(0)
+                Reserve.append(Player)
+            if Player.Position=='DF' and (len(Reserve)<3 or Player.Rating>findmin(DFRating)):
+                if len(Reserve) > 2:
+                    Reserve.pop(1 + findmin(DFRating))
+                Reserve.append(Player)
+                DFRating[findmin(DFRating)] = Player.Rating
+            if Player.Position=='MD' and (len(Reserve)<5 or Player.Rating>findmin(MDRating)):
+                if len(Reserve) > 5:
+                    Reserve.pop(3 + findmin(MDRating))
+                Reserve.append(Player)
+                MDRating[findmin(MDRating)] = Player.Rating
+            if Player.Position=='ST' and (len(Reserve)<7 or Player.Rating>STRating):
+                if len(Reserve) == 7:
+                    Reserve.pop(6)
+                Reserve.append(Player)
+                STRating = Player.Rating
+    return Reserve
+
+
 class Team:
     _Name=''
     _Color=''
     _Points=0
     _Coach=0
     _Tactic=0
+    _Tactic1=0
+    _Tactic2=0
     _AllPlayers=[]
     _StartPlayers=[]
     _ReservePlayers=[]
     _Defenders=0
     _Middefenders=0
     _Strikers=0
-    def __init__(self,Name,Color,Money,Coach,Tactic,TeamPlayers):
+    Points=0
+    WinGames=0
+    LoseGames=0
+    DrawGames=0
+    Games=0
+    GoalsScore=0
+    GoalsLose=0
+    def __init__(self,Name,Color,Money,Coach,TeamPlayers):
         self.Name=Name
         self.Color=Color
         self.Money=Money
         self.Coach=Coach
-        self.Tactic=Tactic
+        self.Tactic1 = Coach.AttackTactic
+        self.Tactic2 = Coach.DefendTactic
+        if self.Coach.Style=='Attack':
+            self.Tactic=self.Tactic1
+        else:
+            self.Tactic=self.Tactic2
         self.AllPlayers=TeamPlayers
         self.StartPlayers=FillStartSquad(self.AllPlayers,self.Tactic)
-        self.Strikers=self.Tactic%10
-        Tactic=int(self.Tactic/10)
+        self.ReservePlayers=FillReserve(self.AllPlayers,self.StartPlayers)
+        self.Strikers=self.Tactic1%10
+        Tactic=int(self.Tactic1/10)
         self.Middefenders=Tactic%10
         Tactic=int(Tactic/10)
         self.Defenders=Tactic%10
